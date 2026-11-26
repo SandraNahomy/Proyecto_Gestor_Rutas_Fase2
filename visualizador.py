@@ -584,7 +584,7 @@ class ManejadorVisualizador(BaseHTTPRequestHandler):
             elif tipo == "vacio":
                 grafo = GrafoPonderado(dirigido=False)
             else:
-                n = int(params.get("n", ["30"])[0])
+                n = int(tipo) if tipo.isdigit() else int(params.get("n", ["30"])[0])
                 semilla = int(params.get("semilla", ["42"])[0])
                 grafo = generar_red_urbana(n, semilla=semilla)
 

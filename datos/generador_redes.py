@@ -3,58 +3,107 @@ import random
 from estructuras.grafo_ponderado import GrafoPonderado
 
 
-def generar_red_urbana(num_estaciones, grado_promedio=3.33, semilla=42):
+def generar_red_urbana(n: int, semilla: int = 42) -> GrafoPonderado:
     """
-    Genera una red urbana dispersa y 100% conexa con 'num_estaciones' nodos.
-    Garantiza que peso(u, v) >= distancia_euclidiana(u, v) para admisibilidad de A*.
+    Genera una red urbana conexa con distribución espacial ordenada
+    (cuadrícula panorámica con ligera variación orgánica) para evitar
+    que las estaciones se superpongan y garantizar vías limpias.
     """
     rng = random.Random(semilla)
     grafo = GrafoPonderado(dirigido=False)
 
-    limite_plano = math.sqrt(num_estaciones) * 10.0
-    nombres = [f"E{i}" for i in range(1, num_estaciones + 1)]
+    if n <= 0:
+        return grafo
 
-    for nombre in nombres:
-        x = round(rng.uniform(0, limite_plano), 2)
-        y = round(rng.uniform(0, limite_plano), 2)
+    # Cuadrícula panorámica (más ancha que alta, ideal para pantalla)
+    columnas = math.ceil(math.sqrt(n * 1.45))
+    filas = math.ceil(n / columnas)
+    separacion = 20.0
+
+    celdas = [(f, c) for f in range(filas) for c in range(columnas)]
+    rng.shuffle(celdas)
+
+    coordenadas = {}
+    estaciones = []
+
+    for i in range(n):
+        nombre = f"E{i + 1}"
+        fila, col = celdas[i]
+        # Desplazamiento controlado dentro de su propia celda (nunca choca con vecinos)
+        dx = rng.uniform(-0.22 * separacion, 0.22 * separacion)
+        dy = rng.uniform(-0.22 * separacion, 0.22 * separacion)
+        x = round((col + 0.5) * separacion + dx, 2)
+        y = round((fila + 0.5) * separacion + dy, 2)
+
         grafo.agregar_estacion(nombre, x, y)
+        coordenadas[nombre] = (x, y)
+        estaciones.append(nombre)
 
-    aristas_existentes = set()
+    if n == 1:
+        return grafo
 
-    def _distancia(u, v):
-        x1, y1 = grafo.obtener_coordenadas(u)
-        x2, y2 = grafo.obtener_coordenadas(v)
-        return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    aristas_creadas = set()
 
-    def _conectar(u, v):
+    def conectar(u: str, v: str):
+        if u == v:
+            return
         par = tuple(sorted((u, v)))
-        if u != v and par not in aristas_existentes:
-            aristas_existentes.add(par)
-            dist = _distancia(u, v)
-            factor_vial = rng.uniform(1.15, 1.65)
-            peso = round(max(1.0, dist * factor_vial), 2)
-            congestion = rng.randint(15, 95)
-            grafo.agregar_conexion(u, v, peso, congestion)
-            return True
-        return False
+        if par in aristas_creadas:
+            return
+        x1, y1 = coordenadas[u]
+        x2, y2 = coordenadas[v]
+        dist_recta = math.hypot(x2 - x1, y2 - y1)
+        # Factor >= 1.05 para garantizar que la heurística euclidiana de A* sea admisible
+        peso = round(max(1, dist_recta * rng.uniform(1.05, 1.32)))
+        congestion = rng.randint(15, 85)
+        grafo.agregar_conexion(u, v, peso, congestion)
+        aristas_creadas.add(par)
 
-    # 1. Garantizar conectividad total uniendo cada nodo con su vecino más cercano
-    conectados = [nombres[0]]
-    for est in nombres[1:]:
-        mas_cercana = min(conectados, key=lambda c: _distancia(est, c))
-        _conectar(est, mas_cercana)
-        conectados.append(est)
+    # 1. Conectar cada estación únicamente con sus 3 vecinos más cercanos (evita cruces largos)
+    k_vecinos = 2 if n <= 6 else 3
+    for u in estaciones:
+        xu, yu = coordenadas[u]
+        cercanos = sorted(
+            (e for e in estaciones if e != u),
+            key=lambda v: math.hypot(coordenadas[v][0] - xu, coordenadas[v][1] - yu),
+        )
+        for v in cercanos[:k_vecinos]:
+            conectar(u, v)
 
-    # 2. Agregar vías secundarias cercanas hasta alcanzar el grado promedio objetivo
-    aristas_objetivo = max(len(aristas_existentes), int(round((num_estaciones * grado_promedio) / 2)))
-    intentos = 0
-    max_intentos = num_estaciones * 30
+    # 2. Garantizar que toda la red quede 100 % conectada uniendo componentes cercanas
+    visitados = set()
+    componentes = []
+    for est in estaciones:
+        if est not in visitados:
+            comp = []
+            cola = [est]
+            visitados.add(est)
+            while cola:
+                actual = cola.pop(0)
+                comp.append(actual)
+                for arista in grafo.obtener_vecinos(actual):
+                    if arista.destino not in visitados:
+                        visitados.add(arista.destino)
+                        cola.append(arista.destino)
+            componentes.append(comp)
 
-    while len(aristas_existentes) < aristas_objetivo and intentos < max_intentos:
-        intentos += 1
-        u = rng.choice(nombres)
-        candidatos = sorted(nombres, key=lambda v: _distancia(u, v))[1:7]
-        v = rng.choice(candidatos)
-        _conectar(u, v)
+    while len(componentes) > 1:
+        comp_a = componentes[0]
+        mejor_par = None
+        mejor_dist = float("inf")
+        mejor_idx = 1
+
+        for idx in range(1, len(componentes)):
+            for u in comp_a:
+                xu, yu = coordenadas[u]
+                for v in componentes[idx]:
+                    d = math.hypot(coordenadas[v][0] - xu, coordenadas[v][1] - yu)
+                    if d < mejor_dist:
+                        mejor_dist = d
+                        mejor_par = (u, v)
+                        mejor_idx = idx
+
+        conectar(mejor_par[0], mejor_par[1])
+        componentes[0].extend(componentes.pop(mejor_idx))
 
     return grafo

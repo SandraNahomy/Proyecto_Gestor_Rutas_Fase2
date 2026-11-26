@@ -20,33 +20,34 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
     body {
       margin: 0; background: var(--bg); color: var(--text);
-      display: grid; grid-template-columns: 430px 1fr; height: 100vh; overflow: hidden;
+      display: grid; grid-template-columns: 425px 1fr; height: 100vh; overflow: hidden;
     }
     aside {
       background: var(--panel); border-right: 1px solid var(--border);
-      padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 11px;
+      padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
     }
     .tag {
-      display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+      display: inline-block; font-size: 0.71rem; font-weight: 700; letter-spacing: 0.06em;
       text-transform: uppercase; color: var(--accent); background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 999px;
     }
-    h1 { font-size: 1.12rem; margin: 5px 0 2px; }
-    p.sub { font-size: 0.79rem; color: var(--muted); margin: 0; }
+    h1 { font-size: 1.1rem; margin: 5px 0 2px; }
+    p.sub { font-size: 0.78rem; color: var(--muted); margin: 0; }
     .box {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 10px; padding: 11px; display: flex; flex-direction: column; gap: 8px;
+      border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px;
     }
     .box-header {
       display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.76rem; color: var(--muted); text-transform: uppercase; font-weight: 700;
+      font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700;
     }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
     .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-    label { font-size: 0.77rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 3px; }
+    .row-rand { display: grid; grid-template-columns: 115px 1fr; gap: 7px; align-items: end; }
+    label { font-size: 0.76rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 3px; }
     select, input, button {
       padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
-      background: #0f172a; color: var(--text); font-size: 0.83rem;
+      background: #0f172a; color: var(--text); font-size: 0.82rem;
     }
     button {
       background: var(--accent); color: #0f172a; font-weight: 700; cursor: pointer; border: none;
@@ -54,14 +55,18 @@
     button:hover { opacity: 0.92; }
     button.sec { background: #334155; color: var(--text); font-weight: 600; }
     button.ok-btn { background: var(--ok); color: #052e16; font-weight: 700; }
+    button.rand-btn {
+      background: rgba(56, 189, 248, 0.18); color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.5); font-weight: 700;
+    }
     button.active-pill { background: var(--accent); color: #0f172a; }
 
     .pseudo {
       background: #090d16; border: 1px solid #1e293b; border-radius: 8px;
-      padding: 7px 0; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 0.79rem;
+      padding: 6px 0; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 0.78rem;
     }
     .pseudo-line {
-      padding: 3px 11px; white-space: pre; color: #94a3b8; border-left: 3px solid transparent;
+      padding: 3px 10px; white-space: pre; color: #94a3b8; border-left: 3px solid transparent;
     }
     .pseudo-line.activa {
       background: rgba(56, 189, 248, 0.2); color: #ffffff; font-weight: 700;
@@ -74,11 +79,11 @@
     }
     .pill-item {
       background: rgba(56, 189, 248, 0.16); border: 1px solid rgba(56, 189, 248, 0.4);
-      color: #e0f2fe; padding: 2px 8px; border-radius: 5px; font-size: 0.75rem; font-family: monospace;
+      color: #e0f2fe; padding: 2px 7px; border-radius: 5px; font-size: 0.74rem; font-family: monospace;
     }
 
     .estado-box {
-      padding: 10px 12px; border-radius: 8px; font-size: 0.83rem; line-height: 1.4;
+      padding: 9px 11px; border-radius: 8px; font-size: 0.82rem; line-height: 1.4;
       background: #0f172a; border-left: 4px solid var(--accent);
     }
     .estado-box.si { border-left-color: var(--ok); background: rgba(16, 185, 129, 0.14); color: #d1fae5; }
@@ -87,36 +92,35 @@
     .estado-box.meta { border-left-color: var(--ok); background: rgba(16, 185, 129, 0.25); color: #ecfdf5; font-weight: 600; }
 
     .speed-group { display: flex; gap: 4px; }
-    .speed-group button { flex: 1; padding: 5px; font-size: 0.74rem; }
+    .speed-group button { flex: 1; padding: 5px; font-size: 0.73rem; }
 
-    main { position: relative; display: flex; flex-direction: column; height: 100vh; }
+    main { position: relative; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     .toolbar {
-      background: rgba(17, 24, 39, 0.96); border-bottom: 1px solid var(--border);
-      padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: rgba(17, 24, 39, 0.98); border-bottom: 1px solid var(--border);
+      padding: 7px 12px; display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;
     }
-    .tool-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .tool-group { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
     .tool-btn {
-      padding: 6px 10px; font-size: 0.78rem; border-radius: 6px; background: #1e293b; color: #e2e8f0;
+      padding: 5px 9px; font-size: 0.76rem; border-radius: 6px; background: #1e293b; color: #e2e8f0;
       border: 1px solid var(--border); cursor: pointer; font-weight: 600;
     }
     .tool-btn.active { background: var(--accent); color: #0f172a; border-color: var(--accent); }
-    #bannerRuta {
-      position: absolute; top: 56px; left: 16px; right: 16px; pointer-events: none;
-      display: flex; justify-content: center; z-index: 5;
+    .tool-btn.magic { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.45); }
+
+    .ruta-bar {
+      background: rgba(6, 78, 59, 0.32); border-bottom: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 6px 14px; font-size: 0.83rem; font-weight: 700; color: #a7f3d0;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
-    .ruta-pill {
-      background: rgba(6, 78, 59, 0.92); border: 1px solid #10b981; color: #ecfdf5;
-      padding: 7px 16px; border-radius: 999px; font-size: 0.86rem; font-weight: 700;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-    }
-    canvas { flex: 1; width: 100%; display: block; }
+
+    canvas { flex: 1; min-height: 0; width: 100%; display: block; }
     .footer-bar {
-      background: rgba(17, 24, 39, 0.96); border-top: 1px solid var(--border);
-      padding: 6px 14px; font-size: 0.77rem; color: var(--muted);
+      background: rgba(17, 24, 39, 0.98); border-top: 1px solid var(--border);
+      padding: 6px 14px; font-size: 0.76rem; color: var(--muted);
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
     }
     .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.74rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
     th, td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; }
     th { color: var(--accent); }
   </style>
@@ -126,20 +130,27 @@
     <div>
       <span class="tag">Algoritmos de Grafos · Paso a Paso</span>
       <h1>Ejecución Línea por Línea</h1>
-      <p class="sub">Visualiza el recorrido, las flechas y cada decisión en vivo.</p>
+      <p class="sub">Grafos predefinidos y generador aleatorio en vivo.</p>
     </div>
 
     <div class="box">
-      <div class="box-header"><span>1. Tamaño de Grafo y Ruta</span></div>
-      <label>Escala del Grafo
+      <div class="box-header"><span>1. Tipo de Red y Ruta</span></div>
+      <label>Red Predefinida o Aleatoria
         <select id="presetGrafo" onchange="cargarPreset()">
-          <option value="8">Pequeño (8 estaciones · Guía A–H)</option>
-          <option value="12">Mediano (12 estaciones · Propio D1–D12)</option>
-          <option value="30">Grande (30 estaciones simuladas)</option>
-          <option value="60">Muy Grande (60 estaciones simuladas)</option>
-          <option value="vacio">Personalizado (Lienzo en blanco)</option>
+          <option value="8">Predefinido 1 · Pequeño (8 estaciones A–H)</option>
+          <option value="12">Predefinido 2 · Mediano (12 estaciones D1–D12)</option>
+          <option value="aleatorio">Red Generada Aleatoriamente (N estaciones)</option>
+          <option value="vacio">Lienzo en Blanco (Manual)</option>
         </select>
       </label>
+
+      <div class="row-rand">
+        <label>N° Estaciones
+          <input type="number" id="numNodosAleatorios" value="25" min="4" max="500" />
+        </label>
+        <button class="rand-btn" onclick="generarRedAleatoria()">🎲 Generar Red Aleatoria</button>
+      </div>
+
       <div class="row-3">
         <label>Algoritmo
           <select id="algoritmo" onchange="prepararTraza()">
@@ -163,11 +174,11 @@
       <div class="pseudo" id="contenedorPseudo"></div>
 
       <div>
-        <div style="font-size:0.73rem; color:var(--muted); margin-bottom:4px;" id="etiquetaEstructura">
+        <div style="font-size:0.72rem; color:var(--muted); margin-bottom:4px;" id="etiquetaEstructura">
           Estructura en vivo:
         </div>
         <div class="estructura-pills" id="contenedorEstructura">
-          <span style="color:#64748b; font-size:0.75rem;">lista para iniciar</span>
+          <span style="color:#64748b; font-size:0.74rem;">lista para iniciar</span>
         </div>
       </div>
 
@@ -208,22 +219,24 @@
   <main>
     <div class="toolbar">
       <div class="tool-group">
-        <span style="font-size:0.77rem; color:var(--muted); font-weight:700;">EDITOR:</span>
-        <button class="tool-btn active" id="modoMover" onclick="setModo('mover')">🖱️ Mover / Ver</button>
-        <button class="tool-btn" id="modoNodo" onclick="setModo('nodo')">➕ Agregar Estación</button>
-        <button class="tool-btn" id="modoArista" onclick="setModo('arista')">🔗 Conectar Vía</button>
-        <button class="tool-btn" id="modoBorrar" onclick="setModo('borrar')">🗑️ Eliminar</button>
+        <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">EDITOR:</span>
+        <button class="tool-btn active" id="modoMover" onclick="setModo('mover')">🖱️ Mover</button>
+        <button class="tool-btn" id="modoNodo" onclick="setModo('nodo')">➕ Estación</button>
+        <button class="tool-btn" id="modoArista" onclick="setModo('arista')">🔗 Conectar</button>
+        <button class="tool-btn" id="modoBorrar" onclick="setModo('borrar')">🗑️ Borrar</button>
       </div>
       <div class="tool-group">
-        <label style="flex-direction:row; align-items:center; gap:5px; font-size:0.77rem; cursor:pointer;">
+        <label style="flex-direction:row; align-items:center; gap:5px; font-size:0.76rem; cursor:pointer;">
           <input type="checkbox" id="verPesos" checked onchange="dibujar()" /> Pesos (km)
         </label>
-        <button class="tool-btn" onclick="limpiarTodo()">🧹 Limpiar Grafo</button>
+        <button class="tool-btn magic" onclick="autoOrganizar()">✨ Auto-Organizar</button>
+        <button class="tool-btn" onclick="limpiarTodo()">🧹 Limpiar</button>
       </div>
     </div>
 
-    <div id="bannerRuta">
-      <div class="ruta-pill" id="textoBannerRuta">Ruta: pulsa Paso ⏭ o ▶ Simular</div>
+    <div class="ruta-bar">
+      <span id="textoBannerRuta">Ruta: pulsa Paso ⏭ o ▶ Simular</span>
+      <span id="infoGrafo" style="color:#94a3b8; font-weight:600; font-size:0.77rem;">|V| = 0 · |E| = 0</span>
     </div>
 
     <canvas id="lienzo"></canvas>
@@ -236,7 +249,7 @@
         <span><i class="dot" style="background:#38bdf8"></i>Árbol Explorado</span>
         <span><i class="dot" style="background:#f87171"></i>❌ Descartado</span>
       </div>
-      <div id="infoGrafo">|V| = 0 · |E| = 0</div>
+      <div>Arrastra cualquier nodo si deseas ajustarlo</div>
     </div>
   </main>
 
@@ -248,6 +261,7 @@
     let traza = { pseudocodigo: [], pasos: [], indice: -1 };
     let timerSimulacion = null;
     let velocidadMs = 500;
+    let infoOrigenRed = 'Predefinido';
 
     let modoEditor = 'mover';
     let nodoArrastrado = null;
@@ -286,15 +300,38 @@
     async function cargarPreset() {
       detenerSimulacion();
       const tipo = document.getElementById('presetGrafo').value;
+      if (tipo === 'aleatorio') {
+        await generarRedAleatoria();
+        return;
+      }
       const resp = await fetch(`/api/red?tipo=${tipo}&t=${Date.now()}`);
       const data = await resp.json();
       grafo.nodos = data.nodos;
       grafo.aristas = data.aristas;
+      infoOrigenRed = (tipo === 'vacio') ? 'Manual' : 'Predefinido';
       actualizarSelectoresNodos();
       await prepararTraza();
     }
 
-    function actualizarSelectoresNodos() {
+    async function generarRedAleatoria() {
+      detenerSimulacion();
+      document.getElementById('presetGrafo').value = 'aleatorio';
+      let n = parseInt(document.getElementById('numNodosAleatorios').value, 10);
+      if (isNaN(n) || n < 4) n = 4;
+      if (n > 500) n = 500;
+      document.getElementById('numNodosAleatorios').value = n;
+
+      const semilla = Math.floor(Math.random() * 90000) + 10000;
+      const resp = await fetch(`/api/red?tipo=aleatorio&n=${n}&semilla=${semilla}&t=${Date.now()}`);
+      const data = await resp.json();
+      grafo.nodos = data.nodos;
+      grafo.aristas = data.aristas;
+      infoOrigenRed = `Aleatorio · Semilla #${semilla}`;
+      actualizarSelectoresNodos(true);
+      await prepararTraza();
+    }
+
+    function actualizarSelectoresNodos(forzarExtremos = false) {
       const selO = document.getElementById('origen');
       const selD = document.getElementById('destino');
       const prevO = selO.value;
@@ -307,13 +344,14 @@
         selD.add(new Option(n.id, n.id));
       });
 
-      if (grafo.nodos.some(n => n.id === prevO)) selO.value = prevO;
+      if (!forzarExtremos && grafo.nodos.some(n => n.id === prevO)) selO.value = prevO;
       else if (grafo.nodos.length > 0) selO.selectedIndex = 0;
 
-      if (grafo.nodos.some(n => n.id === prevD)) selD.value = prevD;
+      if (!forzarExtremos && grafo.nodos.some(n => n.id === prevD)) selD.value = prevD;
       else if (grafo.nodos.length > 1) selD.selectedIndex = (grafo.nodos.length === 8) ? 4 : grafo.nodos.length - 1;
 
-      document.getElementById('infoGrafo').textContent = `|V| = ${grafo.nodos.length} estaciones · |E| = ${grafo.aristas.length} vías`;
+      document.getElementById('infoGrafo').textContent =
+        `|V| = ${grafo.nodos.length} · |E| = ${grafo.aristas.length} (${infoOrigenRed})`;
     }
 
     async function prepararTraza() {
@@ -394,8 +432,8 @@
 
       if (idx < 0 || total === 0) {
         caja.className = 'estado-box';
-        caja.innerHTML = `Listo (${total} pasos generados). Pulsa <strong>Paso ⏭</strong>, <strong>▶ Simular</strong> o <strong>⚡ Ruta Final</strong>.`;
-        contEst.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">en espera</span>';
+        caja.innerHTML = `Listo (${total} pasos). Pulsa <strong>Paso ⏭</strong>, <strong>▶ Simular</strong> o <strong>⚡ Ruta Final</strong>.`;
+        contEst.innerHTML = '<span style="color:#64748b; font-size:0.74rem;">en espera</span>';
         banner.textContent = `Origen: ${document.getElementById('origen').value || '-'} ➔ Destino: ${document.getElementById('destino').value || '-'}`;
         renderizarPseudocodigo(traza.pseudocodigo, -1);
         return;
@@ -415,7 +453,7 @@
       if (paso.estructura && paso.estructura.length > 0) {
         contEst.innerHTML = paso.estructura.map(x => `<span class="pill-item">${x}</span>`).join('');
       } else {
-        contEst.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">vacía</span>';
+        contEst.innerHTML = '<span style="color:#64748b; font-size:0.74rem;">vacía</span>';
       }
     }
 
@@ -484,6 +522,60 @@
       document.getElementById('btnSimular').textContent = '▶ Simular';
     }
 
+    async function autoOrganizar() {
+      const n = grafo.nodos.length;
+      if (n < 2) return;
+      const area = 1600 * n;
+      const k = Math.sqrt(area / n) * 0.85;
+
+      for (let iter = 0; iter < 130; iter++) {
+        const disp = grafo.nodos.map(() => ({ dx: 0, dy: 0 }));
+        const temp = 12 * (1 - iter / 130);
+
+        for (let i = 0; i < n; i++) {
+          for (let j = i + 1; j < n; j++) {
+            let vx = grafo.nodos[i].x - grafo.nodos[j].x;
+            let vy = grafo.nodos[i].y - grafo.nodos[j].y;
+            let dist = Math.hypot(vx, vy) || 0.1;
+            let fuerza = (k * k) / dist;
+            let fx = (vx / dist) * fuerza;
+            let fy = (vy / dist) * fuerza;
+            disp[i].dx += fx;
+            disp[i].dy += fy;
+            disp[j].dx -= fx;
+            disp[j].dy -= fy;
+          }
+        }
+
+        const idxMapa = {};
+        grafo.nodos.forEach((nd, idx) => { idxMapa[nd.id] = idx; });
+
+        grafo.aristas.forEach(a => {
+          const i = idxMapa[a.origen];
+          const j = idxMapa[a.destino];
+          if (i === undefined || j === undefined) return;
+          let vx = grafo.nodos[i].x - grafo.nodos[j].x;
+          let vy = grafo.nodos[i].y - grafo.nodos[j].y;
+          let dist = Math.hypot(vx, vy) || 0.1;
+          let fuerza = (dist * dist) / (k * 1.4);
+          let fx = (vx / dist) * fuerza;
+          let fy = (vy / dist) * fuerza;
+          disp[i].dx -= fx;
+          disp[i].dy -= fy;
+          disp[j].dx += fx;
+          disp[j].dy += fy;
+        });
+
+        for (let i = 0; i < n; i++) {
+          const mag = Math.hypot(disp[i].dx, disp[i].dy) || 1;
+          const paso = Math.min(mag, temp);
+          grafo.nodos[i].x = Math.round((grafo.nodos[i].x + (disp[i].dx / mag) * paso) * 10) / 10;
+          grafo.nodos[i].y = Math.round((grafo.nodos[i].y + (disp[i].dy / mag) * paso) * 10) / 10;
+        }
+      }
+      await prepararTraza();
+    }
+
     function obtenerBounds() {
       if (grafo.nodos.length === 0) return { minX: 0, maxX: 100, minY: 0, maxY: 100 };
       const xs = grafo.nodos.map(n => n.x);
@@ -496,30 +588,30 @@
     }
 
     function mundoAPantalla(x, y, bounds) {
-      const padX = 70, padTop = 75, padBottom = 55;
+      const padX = 55, padY = 45;
       const w = Math.max(1, canvas.width - padX * 2);
-      const h = Math.max(1, canvas.height - padTop - padBottom);
+      const h = Math.max(1, canvas.height - padY * 2);
       return {
         px: padX + ((x - bounds.minX) / (bounds.maxX - bounds.minX)) * w,
-        py: canvas.height - padBottom - ((y - bounds.minY) / (bounds.maxY - bounds.minY)) * h,
+        py: canvas.height - padY - ((y - bounds.minY) / (bounds.maxY - bounds.minY)) * h,
       };
     }
 
     function pantallaAMundo(px, py, bounds) {
-      const padX = 70, padTop = 75, padBottom = 55;
+      const padX = 55, padY = 45;
       const w = Math.max(1, canvas.width - padX * 2);
-      const h = Math.max(1, canvas.height - padTop - padBottom);
+      const h = Math.max(1, canvas.height - padY * 2);
       return {
         x: Math.round((bounds.minX + ((px - padX) / w) * (bounds.maxX - bounds.minX)) * 10) / 10,
-        y: Math.round((bounds.minY + ((canvas.height - padBottom - py) / h) * (bounds.maxY - bounds.minY)) * 10) / 10,
+        y: Math.round((bounds.minY + ((canvas.height - padY - py) / h) * (bounds.maxY - bounds.minY)) * 10) / 10,
       };
     }
 
     function dibujarFlecha(x1, y1, x2, y2, color) {
       const ang = Math.atan2(y2 - y1, x2 - x1);
-      const mx = x1 + (x2 - x1) * 0.62;
-      const my = y1 + (y2 - y1) * 0.62;
-      const tam = 11;
+      const mx = x1 + (x2 - x1) * 0.66;
+      const my = y1 + (y2 - y1) * 0.66;
+      const tam = 10;
       ctx.save();
       ctx.translate(mx, my);
       ctx.rotate(ang);
@@ -533,6 +625,34 @@
       ctx.restore();
     }
 
+    function dibujarEtiquetaPeso(p1, p2, texto, destacada) {
+      const dx = p2.px - p1.px;
+      const dy = p2.py - p1.py;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const mx = p1.px + dx * 0.44 + nx * 8;
+      const my = p1.py + dy * 0.44 + ny * 8;
+
+      ctx.font = destacada ? 'bold 11px Segoe UI' : '10px Segoe UI';
+      const ancho = ctx.measureText(texto).width + 10;
+      const alto = 16;
+
+      ctx.fillStyle = destacada ? '#064e3b' : 'rgba(11, 17, 32, 0.88)';
+      ctx.strokeStyle = destacada ? '#10b981' : 'rgba(51, 65, 85, 0.75)';
+      ctx.lineWidth = destacada ? 1.5 : 1;
+
+      ctx.beginPath();
+      ctx.roundRect(mx - ancho / 2, my - alto / 2, ancho, alto, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = destacada ? '#ecfdf5' : '#cbd5e1';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(texto, mx, my);
+    }
+
     function dibujar() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const bounds = obtenerBounds();
@@ -544,9 +664,15 @@
       const evalArista = paso ? paso.arista_eval : null;
       const visitados = paso ? (paso.visitados || []) : [];
       const arbol = paso ? (paso.aristas_arbol || []) : [];
-      const mostrarPesos = document.getElementById('verPesos').checked && grafo.nodos.length <= 45;
+      const mostrarPesos = document.getElementById('verPesos').checked;
 
-      // 1. Dibujar todas las vías base y el árbol explorado
+      const estaEnRuta = (u, v) => {
+        for (let i = 0; i < ruta.length - 1; i++) {
+          if ((ruta[i] === u && ruta[i + 1] === v) || (ruta[i] === v && ruta[i + 1] === u)) return true;
+        }
+        return false;
+      };
+
       grafo.aristas.forEach(a => {
         const p1 = pos[a.origen], p2 = pos[a.destino];
         if (!p1 || !p2) return;
@@ -559,24 +685,15 @@
         ctx.beginPath();
         ctx.moveTo(p1.px, p1.py);
         ctx.lineTo(p2.px, p2.py);
-        ctx.strokeStyle = enArbol ? 'rgba(56, 189, 248, 0.55)' : 'rgba(148, 163, 184, 0.22)';
-        ctx.lineWidth = enArbol ? 2.8 : 1.5;
+        ctx.strokeStyle = enArbol ? 'rgba(56, 189, 248, 0.55)' : 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = enArbol ? 2.6 : 1.4;
         ctx.stroke();
 
-        if (mostrarPesos) {
-          const mx = (p1.px + p2.px) / 2;
-          const my = (p1.py + p2.py) / 2;
-          ctx.fillStyle = '#0f172a';
-          ctx.fillRect(mx - 12, my - 9, 24, 16);
-          ctx.fillStyle = '#cbd5e1';
-          ctx.font = 'bold 11px Segoe UI';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(`${a.peso}`, mx, my);
+        if (mostrarPesos && grafo.nodos.length <= 55 && !estaEnRuta(a.origen, a.destino)) {
+          dibujarEtiquetaPeso(p1, p2, `${a.peso}`, false);
         }
       });
 
-      // 2. Dibujar la RUTA TRAZADA con brillo y flechas direccionales
       for (let i = 0; i < ruta.length - 1; i++) {
         const p1 = pos[ruta[i]], p2 = pos[ruta[i + 1]];
         if (!p1 || !p2) continue;
@@ -588,14 +705,21 @@
         ctx.moveTo(p1.px, p1.py);
         ctx.lineTo(p2.px, p2.py);
         ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 5.5;
+        ctx.lineWidth = 5;
         ctx.stroke();
         ctx.restore();
 
-        dibujarFlecha(p1.px, p1.py, p2.px, p2.py, '#a7f3d0');
+        dibujarFlecha(p1.px, p1.py, p2.px, p2.py, '#ecfdf5');
+
+        if (mostrarPesos) {
+          const aristaObj = grafo.aristas.find(a =>
+            (a.origen === ruta[i] && a.destino === ruta[i + 1]) ||
+            (a.origen === ruta[i + 1] && a.destino === ruta[i])
+          );
+          if (aristaObj) dibujarEtiquetaPeso(p1, p2, `${aristaObj.peso} km`, true);
+        }
       }
 
-      // 3. Dibujar la arista candidata evaluada en este paso exacto
       if (evalArista) {
         const p1 = pos[evalArista[0]], p2 = pos[evalArista[1]];
         if (p1 && p2) {
@@ -603,24 +727,21 @@
           if (paso.decision === 'no') {
             ctx.setLineDash([7, 5]);
             ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 4.5;
+            ctx.lineWidth = 4.2;
           } else {
             ctx.strokeStyle = '#4ade80';
-            ctx.lineWidth = 6;
+            ctx.lineWidth = 5.5;
           }
           ctx.beginPath();
           ctx.moveTo(p1.px, p1.py);
           ctx.lineTo(p2.px, p2.py);
           ctx.stroke();
           ctx.restore();
-          if (paso.decision === 'si') {
-            dibujarFlecha(p1.px, p1.py, p2.px, p2.py, '#ffffff');
-          }
+          if (paso.decision === 'si') dibujarFlecha(p1.px, p1.py, p2.px, p2.py, '#ffffff');
         }
       }
 
-      // 4. Dibujar nodos y números de orden en la ruta
-      const radio = grafo.nodos.length > 40 ? 9 : 17;
+      const radio = grafo.nodos.length > 60 ? 8 : (grafo.nodos.length > 30 ? 14 : 17);
       const origenId = document.getElementById('origen').value;
       const destinoId = document.getElementById('destino').value;
 
@@ -630,7 +751,7 @@
 
         const idxEnRuta = ruta.indexOf(n.id);
         let relleno = '#1e293b';
-        let borde = '#475569';
+        let borde = '#64748b';
 
         if (visitados.includes(n.id)) { relleno = '#0c4a6e'; borde = '#38bdf8'; }
         if (idxEnRuta !== -1) { relleno = '#065f46'; borde = '#10b981'; }
@@ -643,20 +764,19 @@
         ctx.arc(p.px, p.py, radio, 0, Math.PI * 2);
         ctx.fillStyle = relleno;
         ctx.fill();
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.8;
         ctx.strokeStyle = borde;
         ctx.stroke();
 
-        if (grafo.nodos.length <= 65) {
+        if (grafo.nodos.length <= 80) {
           ctx.fillStyle = '#f8fafc';
-          ctx.font = 'bold 11px Segoe UI';
+          ctx.font = `bold ${grafo.nodos.length > 30 ? 10 : 11}px Segoe UI`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(n.id, p.px, p.py);
         }
 
-        // Insignia con el orden del paso (1, 2, 3...) sobre la ruta
-        if (idxEnRuta !== -1 && grafo.nodos.length <= 40) {
+        if (idxEnRuta !== -1 && grafo.nodos.length <= 60) {
           ctx.beginPath();
           ctx.arc(p.px + radio * 0.85, p.py - radio * 0.85, 8, 0, Math.PI * 2);
           ctx.fillStyle = '#10b981';
@@ -754,6 +874,7 @@
       detenerSimulacion();
       grafo = { nodos: [], aristas: [] };
       nodoPendienteConexion = null;
+      infoOrigenRed = 'Manual';
       actualizarSelectoresNodos();
       await prepararTraza();
     }
