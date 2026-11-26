@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestor de Rutas · Visualización Paso a Paso</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #10b981;
+      --no: #ef4444;
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      display: grid; grid-template-columns: 430px 1fr; height: 100vh; overflow: hidden;
+    }
+    aside {
+      background: var(--panel); border-right: 1px solid var(--border);
+      padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 11px;
+    }
+    .tag {
+      display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--accent); background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 999px;
+    }
+    h1 { font-size: 1.12rem; margin: 5px 0 2px; }
+    p.sub { font-size: 0.79rem; color: var(--muted); margin: 0; }
+    .box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .box-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.76rem; color: var(--muted); text-transform: uppercase; font-weight: 700;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+    label { font-size: 0.77rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 3px; }
+    select, input, button {
+      padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
+      background: #0f172a; color: var(--text); font-size: 0.83rem;
+    }
+    button {
+      background: var(--accent); color: #0f172a; font-weight: 700; cursor: pointer; border: none;
+    }
+    button:hover { opacity: 0.92; }
+    button.sec { background: #334155; color: var(--text); font-weight: 600; }
+    button.ok-btn { background: var(--ok); color: #052e16; font-weight: 700; }
+    button.active-pill { background: var(--accent); color: #0f172a; }
+
+    .pseudo {
+      background: #090d16; border: 1px solid #1e293b; border-radius: 8px;
+      padding: 7px 0; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 0.79rem;
+    }
+    .pseudo-line {
+      padding: 3px 11px; white-space: pre; color: #94a3b8; border-left: 3px solid transparent;
+    }
+    .pseudo-line.activa {
+      background: rgba(56, 189, 248, 0.2); color: #ffffff; font-weight: 700;
+      border-left: 3px solid var(--accent);
+    }
+
+    .estructura-pills {
+      display: flex; flex-wrap: wrap; gap: 5px; min-height: 28px; align-items: center;
+      background: #090d16; padding: 6px 8px; border-radius: 6px; border: 1px solid #1e293b;
+    }
+    .pill-item {
+      background: rgba(56, 189, 248, 0.16); border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #e0f2fe; padding: 2px 8px; border-radius: 5px; font-size: 0.75rem; font-family: monospace;
+    }
+
+    .estado-box {
+      padding: 10px 12px; border-radius: 8px; font-size: 0.83rem; line-height: 1.4;
+      background: #0f172a; border-left: 4px solid var(--accent);
+    }
+    .estado-box.si { border-left-color: var(--ok); background: rgba(16, 185, 129, 0.14); color: #d1fae5; }
+    .estado-box.no { border-left-color: var(--no); background: rgba(239, 68, 68, 0.14); color: #fee2e2; }
+    .estado-box.retroceso { border-left-color: var(--warn); background: rgba(245, 158, 11, 0.14); color: #fef3c7; }
+    .estado-box.meta { border-left-color: var(--ok); background: rgba(16, 185, 129, 0.25); color: #ecfdf5; font-weight: 600; }
+
+    .speed-group { display: flex; gap: 4px; }
+    .speed-group button { flex: 1; padding: 5px; font-size: 0.74rem; }
+
+    main { position: relative; display: flex; flex-direction: column; height: 100vh; }
+    .toolbar {
+      background: rgba(17, 24, 39, 0.96); border-bottom: 1px solid var(--border);
+      padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .tool-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .tool-btn {
+      padding: 6px 10px; font-size: 0.78rem; border-radius: 6px; background: #1e293b; color: #e2e8f0;
+      border: 1px solid var(--border); cursor: pointer; font-weight: 600;
+    }
+    .tool-btn.active { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+    #bannerRuta {
+      position: absolute; top: 56px; left: 16px; right: 16px; pointer-events: none;
+      display: flex; justify-content: center; z-index: 5;
+    }
+    .ruta-pill {
+      background: rgba(6, 78, 59, 0.92); border: 1px solid #10b981; color: #ecfdf5;
+      padding: 7px 16px; border-radius: 999px; font-size: 0.86rem; font-weight: 700;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    }
+    canvas { flex: 1; width: 100%; display: block; }
+    .footer-bar {
+      background: rgba(17, 24, 39, 0.96); border-top: 1px solid var(--border);
+      padding: 6px 14px; font-size: 0.77rem; color: var(--muted);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.74rem; }
+    th, td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <aside>
+    <div>
+      <span class="tag">Algoritmos de Grafos · Paso a Paso</span>
+      <h1>Ejecución Línea por Línea</h1>
+      <p class="sub">Visualiza el recorrido, las flechas y cada decisión en vivo.</p>
+    </div>
+
+    <div class="box">
+      <div class="box-header"><span>1. Tamaño de Grafo y Ruta</span></div>
+      <label>Escala del Grafo
+        <select id="presetGrafo" onchange="cargarPreset()">
+          <option value="8">Pequeño (8 estaciones · Guía A–H)</option>
+          <option value="12">Mediano (12 estaciones · Propio D1–D12)</option>
+          <option value="30">Grande (30 estaciones simuladas)</option>
+          <option value="60">Muy Grande (60 estaciones simuladas)</option>
+          <option value="vacio">Personalizado (Lienzo en blanco)</option>
+        </select>
+      </label>
+      <div class="row-3">
+        <label>Algoritmo
+          <select id="algoritmo" onchange="prepararTraza()">
+            <option value="dfs">DFS (Profundidad)</option>
+            <option value="bfs">BFS (Anchura)</option>
+            <option value="dijkstra">Dijkstra</option>
+            <option value="a_estrella">A* (A-Star)</option>
+          </select>
+        </label>
+        <label>Origen <select id="origen" onchange="prepararTraza()"></select></label>
+        <label>Destino <select id="destino" onchange="prepararTraza()"></select></label>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-header">
+        <span id="tituloPseudo">DFS(G, inicio, meta)</span>
+        <span id="contadorPaso">Paso 0 / 0</span>
+      </div>
+
+      <div class="pseudo" id="contenedorPseudo"></div>
+
+      <div>
+        <div style="font-size:0.73rem; color:var(--muted); margin-bottom:4px;" id="etiquetaEstructura">
+          Estructura en vivo:
+        </div>
+        <div class="estructura-pills" id="contenedorEstructura">
+          <span style="color:#64748b; font-size:0.75rem;">lista para iniciar</span>
+        </div>
+      </div>
+
+      <div class="row-3">
+        <button id="btnSimular" onclick="toggleSimular()">▶ Simular</button>
+        <button class="sec" onclick="pasoSiguiente()">Paso ⏭</button>
+        <button class="ok-btn" onclick="irAlFinal()">⚡ Ruta Final</button>
+      </div>
+
+      <div class="row" style="align-items:center;">
+        <div style="display:flex; gap:5px;">
+          <button class="sec" style="flex:1;" onclick="pasoAnterior()">⏮ Atrás</button>
+          <button class="sec" style="flex:1;" onclick="reiniciarTraza()">↺ Reiniciar</button>
+        </div>
+        <div class="speed-group">
+          <button class="sec" id="velLenta" onclick="setVelocidad(1000, 'velLenta')">lenta</button>
+          <button class="active-pill" id="velNormal" onclick="setVelocidad(500, 'velNormal')">normal</button>
+          <button class="sec" id="velRapida" onclick="setVelocidad(160, 'velRapida')">rápida</button>
+        </div>
+      </div>
+
+      <div class="estado-box" id="cajaEstado">
+        Pulsa <strong>▶ Simular</strong>, <strong>Paso ⏭</strong> o <strong>⚡ Ruta Final</strong> para ver el trazado.
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-header"><span>Comparativa en este Grafo</span></div>
+      <table>
+        <thead>
+          <tr><th>Algoritmo</th><th>Costo</th><th>Explorados</th><th>Tiempo</th></tr>
+        </thead>
+        <tbody id="tablaComp"></tbody>
+      </table>
+    </div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <div class="tool-group">
+        <span style="font-size:0.77rem; color:var(--muted); font-weight:700;">EDITOR:</span>
+        <button class="tool-btn active" id="modoMover" onclick="setModo('mover')">🖱️ Mover / Ver</button>
+        <button class="tool-btn" id="modoNodo" onclick="setModo('nodo')">➕ Agregar Estación</button>
+        <button class="tool-btn" id="modoArista" onclick="setModo('arista')">🔗 Conectar Vía</button>
+        <button class="tool-btn" id="modoBorrar" onclick="setModo('borrar')">🗑️ Eliminar</button>
+      </div>
+      <div class="tool-group">
+        <label style="flex-direction:row; align-items:center; gap:5px; font-size:0.77rem; cursor:pointer;">
+          <input type="checkbox" id="verPesos" checked onchange="dibujar()" /> Pesos (km)
+        </label>
+        <button class="tool-btn" onclick="limpiarTodo()">🧹 Limpiar Grafo</button>
+      </div>
+    </div>
+
+    <div id="bannerRuta">
+      <div class="ruta-pill" id="textoBannerRuta">Ruta: pulsa Paso ⏭ o ▶ Simular</div>
+    </div>
+
+    <canvas id="lienzo"></canvas>
+
+    <div class="footer-bar">
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <span><i class="dot" style="background:#22c55e"></i>Origen</span>
+        <span><i class="dot" style="background:#ef4444"></i>Destino</span>
+        <span><i class="dot" style="background:#10b981"></i>Ruta Activa (con flechas)</span>
+        <span><i class="dot" style="background:#38bdf8"></i>Árbol Explorado</span>
+        <span><i class="dot" style="background:#f87171"></i>❌ Descartado</span>
+      </div>
+      <div id="infoGrafo">|V| = 0 · |E| = 0</div>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('lienzo');
+    const ctx = canvas.getContext('2d');
+
+    let grafo = { nodos: [], aristas: [] };
+    let traza = { pseudocodigo: [], pasos: [], indice: -1 };
+    let timerSimulacion = null;
+    let velocidadMs = 500;
+
+    let modoEditor = 'mover';
+    let nodoArrastrado = null;
+    let nodoPendienteConexion = null;
+
+    function ajustarCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      dibujar();
+    }
+    window.addEventListener('resize', ajustarCanvas);
+
+    function setVelocidad(ms, btnId) {
+      velocidadMs = ms;
+      ['velLenta', 'velNormal', 'velRapida'].forEach(id => {
+        document.getElementById(id).className = (id === btnId) ? 'active-pill' : 'sec';
+      });
+      if (timerSimulacion) {
+        detenerSimulacion();
+        iniciarSimulacion();
+      }
+    }
+
+    function setModo(modo) {
+      modoEditor = modo;
+      nodoPendienteConexion = null;
+      ['modoMover', 'modoNodo', 'modoArista', 'modoBorrar'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+      const mapa = { mover: 'modoMover', nodo: 'modoNodo', arista: 'modoArista', borrar: 'modoBorrar' };
+      document.getElementById(mapa[modo]).classList.add('active');
+      canvas.style.cursor = (modo === 'nodo') ? 'cell' : (modo === 'mover' ? 'grab' : 'pointer');
+      dibujar();
+    }
+
+    async function cargarPreset() {
+      detenerSimulacion();
+      const tipo = document.getElementById('presetGrafo').value;
+      const resp = await fetch(`/api/red?tipo=${tipo}&t=${Date.now()}`);
+      const data = await resp.json();
+      grafo.nodos = data.nodos;
+      grafo.aristas = data.aristas;
+      actualizarSelectoresNodos();
+      await prepararTraza();
+    }
+
+    function actualizarSelectoresNodos() {
+      const selO = document.getElementById('origen');
+      const selD = document.getElementById('destino');
+      const prevO = selO.value;
+      const prevD = selD.value;
+
+      selO.innerHTML = '';
+      selD.innerHTML = '';
+      grafo.nodos.forEach(n => {
+        selO.add(new Option(n.id, n.id));
+        selD.add(new Option(n.id, n.id));
+      });
+
+      if (grafo.nodos.some(n => n.id === prevO)) selO.value = prevO;
+      else if (grafo.nodos.length > 0) selO.selectedIndex = 0;
+
+      if (grafo.nodos.some(n => n.id === prevD)) selD.value = prevD;
+      else if (grafo.nodos.length > 1) selD.selectedIndex = (grafo.nodos.length === 8) ? 4 : grafo.nodos.length - 1;
+
+      document.getElementById('infoGrafo').textContent = `|V| = ${grafo.nodos.length} estaciones · |E| = ${grafo.aristas.length} vías`;
+    }
+
+    async function prepararTraza() {
+      detenerSimulacion();
+      traza.indice = -1;
+      const origen = document.getElementById('origen').value;
+      const destino = document.getElementById('destino').value;
+      const algoritmo = document.getElementById('algoritmo').value;
+
+      const etiquetas = {
+        dfs: 'PilaLIFO (último en entrar, primero en salir):',
+        bfs: 'ColaFIFO (primero en entrar, primero en salir):',
+        dijkstra: 'MinHeap (menor costo acumulado):',
+        a_estrella: 'MinHeap (menor f(n) = g(n) + h(n)):',
+      };
+      document.getElementById('etiquetaEstructura').textContent = etiquetas[algoritmo];
+
+      if (!origen || !destino || grafo.nodos.length === 0) {
+        traza.pasos = [];
+        renderizarPseudocodigo([]);
+        actualizarUIEstado();
+        dibujar();
+        return;
+      }
+
+      const resp = await fetch('/api/traza', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nodos: grafo.nodos,
+          aristas: grafo.aristas,
+          origen,
+          destino,
+          algoritmo,
+        }),
+      });
+      const data = await resp.json();
+      traza.pseudocodigo = data.pseudocodigo;
+      traza.pasos = data.pasos;
+
+      document.getElementById('tituloPseudo').textContent = data.pseudocodigo[0].replace(':', '');
+      renderizarPseudocodigo(data.pseudocodigo, -1);
+      renderizarTablaComparativa(data.comparativa, algoritmo);
+      actualizarUIEstado();
+      dibujar();
+    }
+
+    function renderizarPseudocodigo(lineas, activa = -1) {
+      const cont = document.getElementById('contenedorPseudo');
+      cont.innerHTML = '';
+      lineas.forEach((txt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'pseudo-line' + (idx === activa ? ' activa' : '');
+        div.textContent = txt;
+        cont.appendChild(div);
+      });
+    }
+
+    function renderizarTablaComparativa(lista, activo) {
+      const tbody = document.getElementById('tablaComp');
+      tbody.innerHTML = '';
+      lista.forEach(item => {
+        const tr = document.createElement('tr');
+        if (item.clave === activo) tr.style.background = 'rgba(56, 189, 248, 0.15)';
+        tr.innerHTML = `<td>${item.nombre}</td><td>${item.costo}</td><td>${item.explorados}</td><td>${item.tiempo_us} µs</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function actualizarUIEstado() {
+      const total = traza.pasos.length;
+      const idx = traza.indice;
+      document.getElementById('contadorPaso').textContent = `Paso ${Math.max(0, idx + 1)} / ${total}`;
+
+      const caja = document.getElementById('cajaEstado');
+      const contEst = document.getElementById('contenedorEstructura');
+      const banner = document.getElementById('textoBannerRuta');
+
+      if (idx < 0 || total === 0) {
+        caja.className = 'estado-box';
+        caja.innerHTML = `Listo (${total} pasos generados). Pulsa <strong>Paso ⏭</strong>, <strong>▶ Simular</strong> o <strong>⚡ Ruta Final</strong>.`;
+        contEst.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">en espera</span>';
+        banner.textContent = `Origen: ${document.getElementById('origen').value || '-'} ➔ Destino: ${document.getElementById('destino').value || '-'}`;
+        renderizarPseudocodigo(traza.pseudocodigo, -1);
+        return;
+      }
+
+      const paso = traza.pasos[idx];
+      renderizarPseudocodigo(traza.pseudocodigo, paso.linea);
+
+      caja.className = 'estado-box ' + (paso.decision || '');
+      caja.textContent = paso.mensaje;
+
+      const ruta = paso.ruta_parcial || [];
+      banner.textContent = ruta.length > 0
+        ? `Ruta trazada: ${ruta.join(' ➔ ')} (${ruta.length - 1} tramos)`
+        : 'Explorando...';
+
+      if (paso.estructura && paso.estructura.length > 0) {
+        contEst.innerHTML = paso.estructura.map(x => `<span class="pill-item">${x}</span>`).join('');
+      } else {
+        contEst.innerHTML = '<span style="color:#64748b; font-size:0.75rem;">vacía</span>';
+      }
+    }
+
+    function pasoSiguiente() {
+      if (traza.pasos.length === 0) return;
+      if (traza.indice < traza.pasos.length - 1) {
+        traza.indice++;
+        actualizarUIEstado();
+        dibujar();
+      } else {
+        detenerSimulacion();
+      }
+    }
+
+    function pasoAnterior() {
+      detenerSimulacion();
+      if (traza.indice > 0) {
+        traza.indice--;
+        actualizarUIEstado();
+        dibujar();
+      }
+    }
+
+    function irAlFinal() {
+      detenerSimulacion();
+      if (traza.pasos.length > 0) {
+        traza.indice = traza.pasos.length - 1;
+        actualizarUIEstado();
+        dibujar();
+      }
+    }
+
+    function reiniciarTraza() {
+      detenerSimulacion();
+      traza.indice = -1;
+      actualizarUIEstado();
+      dibujar();
+    }
+
+    function toggleSimular() {
+      if (timerSimulacion) {
+        detenerSimulacion();
+      } else {
+        if (traza.indice >= traza.pasos.length - 1) traza.indice = -1;
+        iniciarSimulacion();
+      }
+    }
+
+    function iniciarSimulacion() {
+      document.getElementById('btnSimular').textContent = '⏸ Pausar';
+      pasoSiguiente();
+      timerSimulacion = setInterval(() => {
+        if (traza.indice < traza.pasos.length - 1) {
+          pasoSiguiente();
+        } else {
+          detenerSimulacion();
+        }
+      }, velocidadMs);
+    }
+
+    function detenerSimulacion() {
+      if (timerSimulacion) {
+        clearInterval(timerSimulacion);
+        timerSimulacion = null;
+      }
+      document.getElementById('btnSimular').textContent = '▶ Simular';
+    }
+
+    function obtenerBounds() {
+      if (grafo.nodos.length === 0) return { minX: 0, maxX: 100, minY: 0, maxY: 100 };
+      const xs = grafo.nodos.map(n => n.x);
+      const ys = grafo.nodos.map(n => n.y);
+      let minX = Math.min(...xs), maxX = Math.max(...xs);
+      let minY = Math.min(...ys), maxY = Math.max(...ys);
+      if (maxX - minX < 10) { minX -= 10; maxX += 10; }
+      if (maxY - minY < 10) { minY -= 10; maxY += 10; }
+      return { minX, maxX, minY, maxY };
+    }
+
+    function mundoAPantalla(x, y, bounds) {
+      const padX = 70, padTop = 75, padBottom = 55;
+      const w = Math.max(1, canvas.width - padX * 2);
+      const h = Math.max(1, canvas.height - padTop - padBottom);
+      return {
+        px: padX + ((x - bounds.minX) / (bounds.maxX - bounds.minX)) * w,
+        py: canvas.height - padBottom - ((y - bounds.minY) / (bounds.maxY - bounds.minY)) * h,
+      };
+    }
+
+    function pantallaAMundo(px, py, bounds) {
+      const padX = 70, padTop = 75, padBottom = 55;
+      const w = Math.max(1, canvas.width - padX * 2);
+      const h = Math.max(1, canvas.height - padTop - padBottom);
+      return {
+        x: Math.round((bounds.minX + ((px - padX) / w) * (bounds.maxX - bounds.minX)) * 10) / 10,
+        y: Math.round((bounds.minY + ((canvas.height - padBottom - py) / h) * (bounds.maxY - bounds.minY)) * 10) / 10,
+      };
+    }
+
+    function dibujarFlecha(x1, y1, x2, y2, color) {
+      const ang = Math.atan2(y2 - y1, x2 - x1);
+      const mx = x1 + (x2 - x1) * 0.62;
+      const my = y1 + (y2 - y1) * 0.62;
+      const tam = 11;
+      ctx.save();
+      ctx.translate(mx, my);
+      ctx.rotate(ang);
+      ctx.beginPath();
+      ctx.moveTo(tam, 0);
+      ctx.lineTo(-tam * 0.75, -tam * 0.65);
+      ctx.lineTo(-tam * 0.75, tam * 0.65);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function dibujar() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const bounds = obtenerBounds();
+      const pos = {};
+      grafo.nodos.forEach(n => { pos[n.id] = mundoAPantalla(n.x, n.y, bounds); });
+
+      const paso = (traza.indice >= 0 && traza.pasos[traza.indice]) ? traza.pasos[traza.indice] : null;
+      const ruta = paso ? (paso.ruta_parcial || []) : [];
+      const evalArista = paso ? paso.arista_eval : null;
+      const visitados = paso ? (paso.visitados || []) : [];
+      const arbol = paso ? (paso.aristas_arbol || []) : [];
+      const mostrarPesos = document.getElementById('verPesos').checked && grafo.nodos.length <= 45;
+
+      // 1. Dibujar todas las vías base y el árbol explorado
+      grafo.aristas.forEach(a => {
+        const p1 = pos[a.origen], p2 = pos[a.destino];
+        if (!p1 || !p2) return;
+
+        const enArbol = arbol.some(par =>
+          (par[0] === a.origen && par[1] === a.destino) ||
+          (par[0] === a.destino && par[1] === a.origen)
+        );
+
+        ctx.beginPath();
+        ctx.moveTo(p1.px, p1.py);
+        ctx.lineTo(p2.px, p2.py);
+        ctx.strokeStyle = enArbol ? 'rgba(56, 189, 248, 0.55)' : 'rgba(148, 163, 184, 0.22)';
+        ctx.lineWidth = enArbol ? 2.8 : 1.5;
+        ctx.stroke();
+
+        if (mostrarPesos) {
+          const mx = (p1.px + p2.px) / 2;
+          const my = (p1.py + p2.py) / 2;
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(mx - 12, my - 9, 24, 16);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = 'bold 11px Segoe UI';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${a.peso}`, mx, my);
+        }
+      });
+
+      // 2. Dibujar la RUTA TRAZADA con brillo y flechas direccionales
+      for (let i = 0; i < ruta.length - 1; i++) {
+        const p1 = pos[ruta[i]], p2 = pos[ruta[i + 1]];
+        if (!p1 || !p2) continue;
+
+        ctx.save();
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(p1.px, p1.py);
+        ctx.lineTo(p2.px, p2.py);
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 5.5;
+        ctx.stroke();
+        ctx.restore();
+
+        dibujarFlecha(p1.px, p1.py, p2.px, p2.py, '#a7f3d0');
+      }
+
+      // 3. Dibujar la arista candidata evaluada en este paso exacto
+      if (evalArista) {
+        const p1 = pos[evalArista[0]], p2 = pos[evalArista[1]];
+        if (p1 && p2) {
+          ctx.save();
+          if (paso.decision === 'no') {
+            ctx.setLineDash([7, 5]);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 4.5;
+          } else {
+            ctx.strokeStyle = '#4ade80';
+            ctx.lineWidth = 6;
+          }
+          ctx.beginPath();
+          ctx.moveTo(p1.px, p1.py);
+          ctx.lineTo(p2.px, p2.py);
+          ctx.stroke();
+          ctx.restore();
+          if (paso.decision === 'si') {
+            dibujarFlecha(p1.px, p1.py, p2.px, p2.py, '#ffffff');
+          }
+        }
+      }
+
+      // 4. Dibujar nodos y números de orden en la ruta
+      const radio = grafo.nodos.length > 40 ? 9 : 17;
+      const origenId = document.getElementById('origen').value;
+      const destinoId = document.getElementById('destino').value;
+
+      grafo.nodos.forEach(n => {
+        const p = pos[n.id];
+        if (!p) return;
+
+        const idxEnRuta = ruta.indexOf(n.id);
+        let relleno = '#1e293b';
+        let borde = '#475569';
+
+        if (visitados.includes(n.id)) { relleno = '#0c4a6e'; borde = '#38bdf8'; }
+        if (idxEnRuta !== -1) { relleno = '#065f46'; borde = '#10b981'; }
+        if (n.id === origenId) { relleno = '#15803d'; borde = '#4ade80'; }
+        if (n.id === destinoId) { relleno = '#b91c1c'; borde = '#f87171'; }
+        if (paso && paso.actual === n.id) { relleno = '#b45309'; borde = '#fbbf24'; }
+        if (nodoPendienteConexion === n.id) { borde = '#f43f5e'; }
+
+        ctx.beginPath();
+        ctx.arc(p.px, p.py, radio, 0, Math.PI * 2);
+        ctx.fillStyle = relleno;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = borde;
+        ctx.stroke();
+
+        if (grafo.nodos.length <= 65) {
+          ctx.fillStyle = '#f8fafc';
+          ctx.font = 'bold 11px Segoe UI';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(n.id, p.px, p.py);
+        }
+
+        // Insignia con el orden del paso (1, 2, 3...) sobre la ruta
+        if (idxEnRuta !== -1 && grafo.nodos.length <= 40) {
+          ctx.beginPath();
+          ctx.arc(p.px + radio * 0.85, p.py - radio * 0.85, 8, 0, Math.PI * 2);
+          ctx.fillStyle = '#10b981';
+          ctx.fill();
+          ctx.fillStyle = '#052e16';
+          ctx.font = 'bold 10px Segoe UI';
+          ctx.fillText(`${idxEnRuta + 1}`, p.px + radio * 0.85, p.py - radio * 0.85);
+        }
+      });
+    }
+
+    function encontrarNodoEn(px, py) {
+      const bounds = obtenerBounds();
+      for (const n of grafo.nodos) {
+        const p = mundoAPantalla(n.x, n.y, bounds);
+        if (Math.hypot(px - p.px, py - p.py) <= 19) return n;
+      }
+      return null;
+    }
+
+    canvas.addEventListener('mousedown', async (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const nodoClic = encontrarNodoEn(px, py);
+
+      if (modoEditor === 'mover') {
+        if (nodoClic) nodoArrastrado = nodoClic;
+      } else if (modoEditor === 'nodo') {
+        if (!nodoClic) {
+          const sugerido = `N${grafo.nodos.length + 1}`;
+          const nombre = prompt('Nombre de la nueva estación:', sugerido);
+          if (!nombre) return;
+          const idLimpio = nombre.trim().toUpperCase();
+          if (grafo.nodos.some(n => n.id === idLimpio)) {
+            alert('Ya existe una estación con ese nombre.');
+            return;
+          }
+          const bounds = obtenerBounds();
+          const coords = pantallaAMundo(px, py, bounds);
+          grafo.nodos.push({ id: idLimpio, x: coords.x, y: coords.y });
+          actualizarSelectoresNodos();
+          await prepararTraza();
+        }
+      } else if (modoEditor === 'arista') {
+        if (nodoClic) {
+          if (!nodoPendienteConexion) {
+            nodoPendienteConexion = nodoClic.id;
+            dibujar();
+          } else if (nodoPendienteConexion !== nodoClic.id) {
+            const pesoStr = prompt(`Distancia en km entre ${nodoPendienteConexion} y ${nodoClic.id}:`, '5');
+            const peso = parseFloat(pesoStr);
+            if (!isNaN(peso) && peso > 0) {
+              grafo.aristas = grafo.aristas.filter(a =>
+                !((a.origen === nodoPendienteConexion && a.destino === nodoClic.id) ||
+                  (a.origen === nodoClic.id && a.destino === nodoPendienteConexion))
+              );
+              grafo.aristas.push({ origen: nodoPendienteConexion, destino: nodoClic.id, peso, congestion: 40 });
+              actualizarSelectoresNodos();
+              await prepararTraza();
+            }
+            nodoPendienteConexion = null;
+            dibujar();
+          }
+        }
+      } else if (modoEditor === 'borrar') {
+        if (nodoClic) {
+          grafo.nodos = grafo.nodos.filter(n => n.id !== nodoClic.id);
+          grafo.aristas = grafo.aristas.filter(a => a.origen !== nodoClic.id && a.destino !== nodoClic.id);
+          actualizarSelectoresNodos();
+          await prepararTraza();
+        }
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (modoEditor === 'mover' && nodoArrastrado) {
+        const rect = canvas.getBoundingClientRect();
+        const bounds = obtenerBounds();
+        const coords = pantallaAMundo(e.clientX - rect.left, e.clientY - rect.top, bounds);
+        nodoArrastrado.x = coords.x;
+        nodoArrastrado.y = coords.y;
+        dibujar();
+      }
+    });
+
+    canvas.addEventListener('mouseup', async () => {
+      if (nodoArrastrado) {
+        nodoArrastrado = null;
+        await prepararTraza();
+      }
+    });
+
+    async function limpiarTodo() {
+      detenerSimulacion();
+      grafo = { nodos: [], aristas: [] };
+      nodoPendienteConexion = null;
+      actualizarSelectoresNodos();
+      await prepararTraza();
+    }
+
+    ajustarCanvas();
+    cargarPreset();
+  </script>
+</body>
+</html>
